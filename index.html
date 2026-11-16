@@ -98,9 +98,10 @@ body {
 .cds-icon.warn-ic [data-icon-path="inner-path"] { fill: #000; opacity: 1; }
 .wx { width: 1em; height: 1em; }
 /* UI shell header (Carbon default: g100 in every theme) */
-.shell { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; margin: 0 -16px; padding: env(safe-area-inset-top) 0 0 16px; height: calc(48px + env(safe-area-inset-top)); background: #161616; color: #f4f4f4; border-bottom: 1px solid #393939; }
-.shell-name { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 20px; line-height: 28px; letter-spacing: 0; white-space: nowrap; }
-.shell-name .cds-icon { width: 24px; height: 24px; }
+.shell { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; margin: 0 -16px; padding: calc(env(safe-area-inset-top) + 20px) 4px 12px 16px; min-height: calc(76px + env(safe-area-inset-top)); background: #161616; color: #f4f4f4; border-bottom: 1px solid #393939; }
+.shell-name { flex: 1; min-width: 0; color: inherit; padding: 0; text-align: left; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; gap: 12px; font-size: 20px; line-height: 28px; letter-spacing: 0; white-space: nowrap; }
+.shell-mark { width: 40px; height: 40px; background: #0f62fe; display: grid; place-items: center; flex: none; }
+.shell-mark .cds-icon { width: 24px; height: 24px; fill: #ffffff; }
 .shell-name b { font-weight: 600; }
 .shell .icon-btn { color: #f4f4f4; }
 .shell .icon-btn:hover { background: #2c2c2c; }
@@ -212,7 +213,7 @@ footer a { color: var(--link); text-decoration: none; }
 </head>
 <body>
 <header class="shell">
-  <span class="shell-name"><svg class="cds-icon" data-i="running"></svg><span>Meteo <b>Run</b></span></span>
+  <button type="button" class="shell-name" id="btnTop" aria-label="Meteo Run, torna in cima"><span class="shell-mark"><svg class="cds-icon" data-i="running"></svg></span><span>Meteo <b>Run</b></span></button>
   <button class="icon-btn" id="btnSearch" aria-label="Cerca località" title="Cerca località"><svg class="cds-icon" data-i="search"></svg></button>
   <button class="icon-btn" id="btnLocate" aria-label="Usa la mia posizione" title="Usa la mia posizione"><svg class="cds-icon" data-i="location"></svg></button>
   <button class="icon-btn" id="btnRefresh" aria-label="Aggiorna" title="Aggiorna"><svg class="cds-icon" data-i="renew"></svg></button>
@@ -842,6 +843,7 @@ function showSearch(msg) {
 }
 $('btnSearch').onclick = () => $('searchBox').classList.toggle('hidden') || $('q').focus();
 $('btnLocate').onclick = locate;
+$('btnTop').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 $('btnRefresh').onclick = () => current ? run(current) : locate();
 $('searchForm').onsubmit = async e => {
   e.preventDefault();
