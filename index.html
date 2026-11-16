@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Meteo Run">
+<meta name="theme-color" content="#161616">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&display=swap">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Meteo Run</title>
+<style>
+/* IBM Carbon Design System — g10 (light) / g100 (dark) theme tokens */
+:root {
+  color-scheme: light;
+  --background: #f4f4f4;
+  --layer: #ffffff;
+  --layer-2: #f4f4f4;
+  --layer-hover: #e8e8e8;
+  --layer-selected: #e0e0e0;
+  --field: #f4f4f4;
+  --border-subtle: #e0e0e0;
+  --border-strong: #8d8d8d;
+  --text-primary: #161616;
+  --text-secondary: #525252;
+  --text-helper: #6f6f6f;
+  --text-on-color: #ffffff;
+  --icon-primary: #161616;
+  --link: #0f62fe;
+  --interactive: #0f62fe;
+  --button-primary: #0f62fe;
+  --button-primary-hover: #0050e6;
+  --focus: #0f62fe;
+  --inverse-bg: #393939;
+  --inverse-text: #ffffff;
+  --selected-bg: #161616;
+  --selected-text: #ffffff;
+  --s1: #6929c4;  /* purple 70 · Yr */
+  --s2: #1192e8;  /* cyan 50 · Aeronautica */
+  --s3: #9f1853;  /* magenta 70 · Windy */
+  --rain-0: #f4f4f4; --rain-1: #d0e2ff; --rain-2: #a6c8ff; --rain-3: #0f62fe; --rain-4: #002d9c;
+  --rain-ink-1: #161616; --rain-ink-3: #ffffff;
+  --tag-green-bg: #a7f0ba; --tag-green: #0e6027;
+  --tag-gray-bg: #e5e0df; --tag-gray: #3c3838;
+  --tag-red-bg: #ffd7d9; --tag-red: #a2191f;
+  --warning: #f1c21b; --notif-warning-bg: #fcf4d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #161616;
+    --layer: #262626;
+    --layer-2: #393939;
+    --layer-hover: #333333;
+    --layer-selected: #525252;
+    --field: #393939;
+    --border-subtle: #393939;
+    --border-strong: #6f6f6f;
+    --text-primary: #f4f4f4;
+    --text-secondary: #c6c6c6;
+    --text-helper: #a8a8a8;
+    --icon-primary: #f4f4f4;
+    --link: #78a9ff;
+    --interactive: #4589ff;
+    --focus: #ffffff;
+    --inverse-bg: #f4f4f4;
+    --inverse-text: #161616;
+    --selected-bg: #f4f4f4;
+    --selected-text: #161616;
+    --s1: #8a3ffc; --s2: #1192e8; --s3: #ee5396;
+    --rain-0: #393939; --rain-1: #002d9c; --rain-2: #0043ce; --rain-3: #4589ff; --rain-4: #a6c8ff;
+    --rain-ink-1: #ffffff; --rain-ink-3: #161616;
+    --tag-green-bg: #0e6027; --tag-green: #a7f0ba;
+    --tag-gray-bg: #565151; --tag-gray: #e5e0df;
+    --tag-red-bg: #a2191f; --tag-red: #ffd7d9;
+    --notif-warning-bg: #393939;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--background); color: var(--text-primary); }
+body {
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px; line-height: 18px; letter-spacing: 0.16px;
+  padding: 0 16px calc(env(safe-area-inset-bottom) + 32px);
+  max-width: 672px; margin: 0 auto;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+.cds-icon { width: 16px; height: 16px; fill: currentColor; flex: none; display: inline-block; vertical-align: middle; }
+.cds-icon.warn-ic { fill: var(--warning); }
+.cds-icon.warn-ic [data-icon-path="inner-path"] { fill: #000; opacity: 1; }
+.wx { width: 1em; height: 1em; }
+/* UI shell header (Carbon default: g100 in every theme) */
+.shell { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; margin: 0 -16px; padding: env(safe-area-inset-top) 0 0 16px; height: calc(48px + env(safe-area-inset-top)); background: #161616; color: #f4f4f4; border-bottom: 1px solid #393939; }
+.shell-name { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 20px; line-height: 28px; letter-spacing: 0; white-space: nowrap; }
+.shell-name .cds-icon { width: 24px; height: 24px; }
+.shell-name b { font-weight: 600; }
+.shell .icon-btn { color: #f4f4f4; }
+.shell .icon-btn:hover { background: #2c2c2c; }
+.shell .icon-btn:active { background: #525252; }
+.shell .icon-btn:focus-visible { outline-color: #ffffff; }
+.page-head { padding: 24px 0 16px; }
+.page-head h1 { font-size: 28px; line-height: 36px; font-weight: 400; letter-spacing: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.page-head .sub { color: var(--text-helper); font-size: 12px; line-height: 16px; letter-spacing: 0.32px; margin-top: 2px; }
+button { font: inherit; letter-spacing: inherit; color: var(--text-primary); background: transparent; border: 0; border-radius: 0; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.icon-btn { width: 48px; height: 48px; padding: 0; display: grid; place-items: center; color: var(--icon-primary); }
+.icon-btn .cds-icon { width: 20px; height: 20px; }
+.icon-btn:hover { background: var(--layer-hover); }
+.icon-btn:active { background: var(--layer-selected); }
+button:disabled { opacity: 0.25; cursor: not-allowed; background: transparent !important; }
+.btn-primary { background: var(--button-primary); color: var(--text-on-color); height: 48px; padding: 0 64px 0 16px; text-align: left; }
+.btn-primary:hover { background: var(--button-primary-hover); }
+.btn-tertiary { border: 1px solid var(--interactive); color: var(--interactive); height: 48px; padding: 0 16px; width: 100%; text-align: left; }
+.btn-tertiary:hover { background: var(--interactive); color: var(--text-on-color); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--text-secondary); margin: 0 0 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; display: inline-block; flex: none; }
+.d1 { background: var(--s1); } .d2 { background: var(--s2); } .d3 { background: var(--s3); }
+section { background: var(--layer); padding: 16px; margin-bottom: 8px; }
+section h2 { font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: 0.16px; color: var(--text-primary); margin: 0 0 16px; }
+.now { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-subtle); border: 1px solid var(--border-subtle); }
+.now .card { padding: 12px 8px 12px; background: var(--layer); text-align: left; }
+.now .src { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.now .src .dot { width: 8px; height: 8px; }
+.now .emo { font-size: 32px; line-height: 1; margin: 12px 0 4px; color: var(--icon-primary); }
+.now .t { font-size: 32px; line-height: 40px; font-weight: 300; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.now .meta { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--text-secondary); font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.now .meta .cds-icon { width: 14px; height: 14px; color: var(--text-helper); }
+.now .err { font-size: 12px; color: var(--text-helper); padding: 24px 0; }
+.chart-wrap { position: relative; touch-action: pan-y; }
+.chart-wrap svg#chart { display: block; width: 100%; height: auto; overflow: visible; font-family: inherit; }
+.tip { position: absolute; top: 0; pointer-events: none; background: var(--inverse-bg); color: var(--inverse-text); border-radius: 2px; padding: 8px 12px; font-size: 12px; line-height: 16px; letter-spacing: 0.32px; white-space: nowrap; display: none; font-variant-numeric: tabular-nums; box-shadow: 0 2px 6px rgba(0,0,0,.3); }
+.tip b { display: block; font-weight: 600; margin-bottom: 4px; }
+.tip div { display: flex; align-items: center; gap: 6px; }
+.tip .dot { width: 8px; height: 8px; }
+.rain { margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.rain table { border-collapse: separate; border-spacing: 1px; font-size: 12px; letter-spacing: 0.32px; font-variant-numeric: tabular-nums; }
+.rain th { font-weight: 400; color: var(--text-helper); padding: 0 2px 4px; text-align: center; white-space: nowrap; }
+.rain th.rowh { text-align: left; padding: 0 8px 0 0; position: sticky; left: 0; background: var(--layer); z-index: 1; }
+.rain td { width: 36px; min-width: 36px; height: 28px; text-align: center; background: var(--rain-0); color: var(--text-secondary); }
+.rain td.r1, .rain td.r2 { background: var(--rain-1); color: var(--rain-ink-1); }
+.rain td.r2 { background: var(--rain-2); }
+.rain td.r3 { background: var(--rain-3); color: var(--rain-ink-3); }
+.rain td.r4 { background: var(--rain-4); color: var(--rain-ink-3); }
+@media (prefers-color-scheme: light) { .rain td.r2 { color: #161616; } .rain td.r4 { color: #ffffff; } }
+.rain .day-sep { color: var(--text-primary); font-weight: 600; text-transform: capitalize; }
+.hint { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--text-helper); margin-top: 8px; }
+.subhead { margin-top: 24px !important; }
+.days { display: flex; flex-direction: column; }
+.day { border-top: 1px solid var(--border-subtle); padding: 12px 0; }
+.day:first-child { border-top: 0; padding-top: 0; }
+.day:last-child { padding-bottom: 0; }
+.day-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; min-height: 24px; }
+.day-h .name { font-weight: 600; text-transform: capitalize; }
+.badge { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; border-radius: 12px; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px; }
+.badge.good { color: var(--tag-green); background: var(--tag-green-bg); }
+.badge.warn { color: var(--tag-gray); background: var(--tag-gray-bg); }
+.badge.bad { color: var(--tag-red); background: var(--tag-red-bg); }
+.drow { display: grid; grid-template-columns: 12px 1fr 24px 76px 56px; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; padding: 4px 0; }
+.drow .lbl { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drow .emo { font-size: 20px; line-height: 1; display: grid; place-items: center; color: var(--icon-primary); }
+.drow .mm { text-align: right; color: var(--text-secondary); }
+.drow .tt { text-align: right; }
+.drow .tt .lo { color: var(--text-helper); }
+.drow .tt strong { font-weight: 600; }
+.drow.miss { color: var(--text-helper); }
+.windy-frame { width: 100%; height: 360px; border: 0; display: block; }
+.links { display: flex; flex-direction: column; }
+.links a { color: var(--link); text-decoration: none; display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-top: 1px solid var(--border-subtle); }
+.links a:first-child { border-top: 0; }
+.links a:hover { text-decoration: underline; }
+footer { font-size: 12px; line-height: 16px; letter-spacing: 0.32px; color: var(--text-helper); padding: 8px 0 0; }
+footer a { color: var(--link); text-decoration: none; }
+.status { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 48px 16px; color: var(--text-secondary); }
+.search { display: flex; margin-bottom: 16px; }
+.search input { flex: 1; font: inherit; letter-spacing: inherit; height: 48px; padding: 0 16px; border: 0; border-bottom: 1px solid var(--border-strong); background: var(--layer); color: var(--text-primary); min-width: 0; border-radius: 0; -webkit-appearance: none; }
+.search .btn-primary { padding: 0 16px; }
+.results { margin: -8px 0 16px; background: var(--layer); }
+.results button { display: block; width: 100%; text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); }
+.results button:hover { background: var(--layer-hover); }
+.results .hint { padding: 8px 16px; margin: 0; }
+.hidden { display: none !important; }
+.spin { width: 16px; height: 16px; border: 2px solid var(--interactive); border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin 0.69s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.notif { display: flex; gap: 12px; background: var(--notif-warning-bg); border-left: 3px solid var(--warning); padding: 14px 16px 14px 13px; margin: 0 0 16px; font-size: 14px; line-height: 18px; color: var(--text-primary); }
+.notif .cds-icon { width: 20px; height: 20px; margin-top: -1px; }
+.run-hours { display: flex; gap: 1px; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -16px 16px; padding: 0 16px; scrollbar-width: none; }
+.run-hours::-webkit-scrollbar { display: none; }
+.rh { flex: none; width: 52px; padding: 8px 0; display: grid; grid-template-rows: 12px 18px 20px 16px; row-gap: 6px; justify-items: center; align-items: center; background: var(--layer-2); }
+.rh:hover { background: var(--layer-hover); }
+.rh[aria-pressed="true"] { background: var(--selected-bg); color: var(--selected-text); }
+.rh[aria-pressed="true"] .rh-t, .rh[aria-pressed="true"] .rh-day { color: var(--selected-text); }
+.rh-day { font-size: 10px; line-height: 12px; height: 12px; color: var(--text-helper); text-transform: capitalize; }
+.rh-h { font-size: 14px; line-height: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rh-e { font-size: 20px; line-height: 1; display: grid; place-items: center; height: 20px; }
+.rh-t { font-size: 12px; line-height: 16px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.run-when { font-size: 20px; line-height: 28px; font-weight: 400; text-transform: capitalize; }
+.run-cond { font-size: 14px; color: var(--text-secondary); margin: 4px 0 16px; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.run-cond .wx { font-size: 20px; color: var(--icon-primary); }
+.run-list { display: flex; flex-direction: column; border-top: 1px solid var(--border-subtle); margin-bottom: 8px; }
+.run-item { display: grid; grid-template-columns: 88px 1fr; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.run-part { color: var(--text-helper); font-size: 12px; line-height: 18px; letter-spacing: 0.32px; }
+</style>
+</head>
+<body>
+<header class="shell">
+  <span class="shell-name"><svg class="cds-icon" data-i="running"></svg><span>Meteo <b>Run</b></span></span>
+  <button class="icon-btn" id="btnSearch" aria-label="Cerca località" title="Cerca località"><svg class="cds-icon" data-i="search"></svg></button>
+  <button class="icon-btn" id="btnLocate" aria-label="Usa la mia posizione" title="Usa la mia posizione"><svg class="cds-icon" data-i="location"></svg></button>
+  <button class="icon-btn" id="btnRefresh" aria-label="Aggiorna" title="Aggiorna"><svg class="cds-icon" data-i="renew"></svg></button>
+</header>
+<div class="page-head">
+  <h1 id="place">Posizione</h1>
+  <div class="sub" id="updated">Yr · Aeronautica Militare · Windy (ECMWF)</div>
+</div>
+
+<div id="searchBox" class="hidden">
+  <form class="search" id="searchForm">
+    <input id="q" type="search" placeholder="Cerca una città…" autocomplete="off">
+    <button type="submit" class="btn-primary">Cerca</button>
+  </form>
+  <div class="results" id="results"></div>
+</div>
+
+<div class="legend">
+  <span><i class="dot d1"></i>Yr</span>
+  <span><i class="dot d2"></i>Aeronautica Militare</span>
+  <span><i class="dot d3"></i>Windy · ECMWF</span>
+</div>
+
+<div id="status" class="status"><span class="spin"></span>Cerco la tua posizione…</div>
+
+<main id="app" class="hidden">
+  <section>
+    <h2>Adesso</h2>
+    <div class="now" id="now"></div>
+    <div class="hint">Vento attuale e pioggia nelle prossime 3 ore.</div>
+  </section>
+
+  <section>
+    <h2>Corsa · cosa mettersi</h2>
+    <div class="run-hours" id="runHours" role="group" aria-label="Ora della corsa"></div>
+    <div id="runDetail"></div>
+  </section>
+
+  <section>
+    <h2>Temperatura · prossime 48 ore</h2>
+    <div class="chart-wrap" id="chartWrap">
+      <svg id="chart" viewBox="0 0 340 170" role="img" aria-label="Temperatura prevista dalle tre fonti nelle prossime 48 ore"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="hint">Tocca o trascina sul grafico per confrontare le ore.</div>
+    <h2 class="subhead">Pioggia · ogni 3 ore</h2>
+    <div class="rain" id="rain"></div>
+    <div class="hint" id="rainNote">Yr e Windy indicano i millimetri; l'Aeronautica Militare pubblica solo la probabilità di pioggia (%).</div>
+  </section>
+
+  <section>
+    <h2>Prossimi giorni</h2>
+    <div class="days" id="days"></div>
+  </section>
+
+  <section>
+    <h2>Windy</h2>
+    <div id="windyBox"></div>
+    <div class="links" id="links"></div>
+  </section>
+</main>
+
+<footer>
+  Dati: <a href="https://www.yr.no" target="_blank" rel="noopener">Yr / MET Norway</a> (CC BY 4.0) ·
+  <a href="https://www.meteoam.it" target="_blank" rel="noopener">Servizio Meteorologico dell'Aeronautica Militare</a> ·
+  modello ECMWF HRES (quello predefinito su Windy) via <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> ·
+  mappa <a href="https://www.windy.com" target="_blank" rel="noopener">Windy.com</a>.
+  L'API ufficiale di Windy è a pagamento, per questo i numeri "Windy" arrivano dallo stesso modello ECMWF.
+</footer>
+
+<script>
+(() => {
+const SRC = [
+  { id: 'yr', name: 'Yr', cls: 'd1', color: 'var(--s1)' },
+  { id: 'am', name: 'Aeronautica', cls: 'd2', color: 'var(--s2)' },
+  { id: 'wd', name: 'Windy · ECMWF', cls: 'd3', color: 'var(--s3)' },
+];
+const $ = id => document.getElementById(id);
+const H = 3600e3;
+// Carbon Design System icons (@carbon/icons, Apache-2.0), 32px grid
+const ICON = {"running":"<path d=\"m21.707,20.293l-5-5c-.1951-.1953-.451-.293-.707-.293s-.512.0977-.707.293L2,28.5859l1.4143,1.4141,12.5857-12.5859,3.5857,3.5859-5.5857,5.5859,1.4143,1.4141,2.292-2.292,4.0007-4.001c.1953-.1953.293-.4512.293-.707s-.0977-.5117-.293-.707Z\"/><path d=\"m28.5859,9l-5.5859,5.5859-6.0012-6.0015c-.392-.3918-.9073-.5865-1.422-.5845-.5096.002-1.0185.1968-1.4063.5845l-6.1704,6.1753,1.4143,1.4141,6.1704-6.1748,6.7083,6.708c.1951.1953.4512.293.707.293s.512-.0977.707-.293l6.293-6.293-1.4141-1.4141Z\"/><path d=\"m22.5,9c-1.9299,0-3.5-1.5701-3.5-3.5s1.5701-3.5,3.5-3.5,3.5,1.5701,3.5,3.5-1.5701,3.5-3.5,3.5Zm0-5c-.8271,0-1.5.6729-1.5,1.5s.6729,1.5,1.5,1.5,1.5-.6729,1.5-1.5-.6729-1.5-1.5-1.5Z\"/>","sun":"<path d=\"M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z\" transform=\"translate(0 .005)\"/><path d=\"M6.854 5.375H8.854V10.333H6.854z\" transform=\"rotate(-45 7.86 7.856)\"/><path d=\"M2 15.005H7V17.005000000000003H2z\"/><path d=\"M5.375 23.147H10.333V25.147H5.375z\" transform=\"rotate(-45 7.86 24.149)\"/><path d=\"M15 25.005H17V30.005H15z\"/><path d=\"M23.147 21.668H25.147V26.625999999999998H23.147z\" transform=\"rotate(-45 24.152 24.149)\"/><path d=\"M25 15.005H30V17.005000000000003H25z\"/><path d=\"M21.668 6.854H26.625999999999998V8.854H21.668z\" transform=\"rotate(-45 24.152 7.856)\"/><path d=\"M15 2.005H17V7.005H15z\"/>","moon":"<path d=\"M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z\"/>","partly":"<path d=\"M27 15H31V17H27z\"/><path d=\"M23.086 5.794H27.329V7.794H23.086z\" transform=\"rotate(-45 25.207 6.794)\"/><path d=\"M15 1H17V5H15z\"/><path d=\"M4.672 24.208H8.915V26.208H4.672z\" transform=\"rotate(-45 6.793 25.208)\"/><path d=\"M5.793 4.672H7.793V8.915H5.793z\" transform=\"rotate(-45 6.793 6.794)\"/><path d=\"M1 15H5V17H1z\"/><path d=\"M26.7939,20.3418a6.9617,6.9617,0,0,0-1.8681-3.2671A8.485,8.485,0,0,0,25,16a9,9,0,1,0-14.585,7.0332A4.9771,4.9771,0,0,0,15,30H25a4.9947,4.9947,0,0,0,1.7939-9.6582ZM9,16a6.9955,6.9955,0,0,1,13.9849-.2969A6.8883,6.8883,0,0,0,20,15a7.04,7.04,0,0,0-6.7944,5.3418A4.986,4.986,0,0,0,11.5618,21.39,6.9675,6.9675,0,0,1,9,16ZM25,28H15a2.9945,2.9945,0,0,1-.6963-5.9082l.6587-.1572.0986-.67a4.9923,4.9923,0,0,1,9.878,0l.0986.6695.6587.1572A2.9945,2.9945,0,0,1,25,28Z\"/>","partlyN":"<path d=\"M30,19a4.974,4.974,0,0,0-3.2061-4.6582A6.9711,6.9711,0,0,0,13.7578,12.9a13.1418,13.1418,0,0,1,.1314-8.52A1.015,1.015,0,0,0,12.98,3a.9825.9825,0,0,0-.1746.0156A13.0958,13.0958,0,0,0,14.63,28.9971c.164.0063.3281,0,.4907,0a13.0412,13.0412,0,0,0,10.29-5.0386A4.99,4.99,0,0,0,30,19ZM14.7034,26.9976a11.0945,11.0945,0,0,1-3.201-21.584,15.1817,15.1817,0,0,0,.8443,9.3676A4.9877,4.9877,0,0,0,15,24h7.6772a11.0991,11.0991,0,0,1-7.5561,2.9976C14.9827,26.9976,14.8428,27.0024,14.7034,26.9976ZM25,22H15a2.9945,2.9945,0,0,1-.6963-5.9082l.6587-.1572.0986-.67a4.9923,4.9923,0,0,1,9.878.0005l.0986.6695.6587.1572A2.9945,2.9945,0,0,1,25,22Z\"/>","cloudy":"<path d=\"M30.0005,15.5005a6.5324,6.5324,0,0,0-5.1992-6.3638,8.9943,8.9943,0,0,0-17.6006,0,6.5321,6.5321,0,0,0-5.2,6.3638,6.4543,6.4543,0,0,0,1.6887,4.35A5.9829,5.9829,0,0,0,8,30H19a5.9764,5.9764,0,0,0,5.6094-8.1016A6.5051,6.5051,0,0,0,30.0005,15.5005ZM19,28H8a3.9925,3.9925,0,0,1-.6731-7.9292L7.99,19.958l.1458-.6562a5.496,5.496,0,0,1,10.7294,0l.1458.6562.6626.1128A3.9925,3.9925,0,0,1,19,28Zm4.5-8h-.0554a5.9562,5.9562,0,0,0-2.7959-1.7564,7.4952,7.4952,0,0,0-14.2984,0,5.9877,5.9877,0,0,0-1.0315.4073A4.4446,4.4446,0,0,1,4,15.5005a4.5171,4.5171,0,0,1,4.144-4.481l.8155-.0639.0991-.812a6.9938,6.9938,0,0,1,13.8838,0l.0986.812.8154.0639a4.4975,4.4975,0,0,1-.3564,8.981Z\"/>","fog":"<path d=\"M24.8008,11.1382a8.9938,8.9938,0,0,0-17.6006,0A6.533,6.533,0,0,0,2,17.5H2V19a1,1,0,0,0,1,1H15a1,1,0,0,0,0-2H4v-.4966H4a4.5176,4.5176,0,0,1,4.144-4.4819l.8155-.064.0991-.812a6.9936,6.9936,0,0,1,13.8838,0l.0986.812.8154.064A4.4962,4.4962,0,0,1,23.5,22H7a1,1,0,0,0,0,2H23.5a6.4963,6.4963,0,0,0,1.3008-12.8618Z\"/><rect width=\"18\" height=\"2\" x=\"2\" y=\"26\" rx=\"1\"/>","drizzle":"<path d=\"M8.5084,32a1.0127,1.0127,0,0,1-.4485-.1054.9986.9986,0,0,1-.4486-1.3418l1.4934-3.0005a1.0025,1.0025,0,0,1,1.7943.8945l-1.4934,3A1.0013,1.0013,0,0,1,8.5084,32Z\"/><path d=\"M27.232 15.733H29.232V18.733H27.232z\" transform=\"rotate(-45.01 28.232 17.233)\"/><path d=\"M29 10H32V12H29z\"/><path d=\"M26.732 3.768H29.732V5.768H26.732z\" transform=\"rotate(-45 28.232 4.768)\"/><path d=\"M20 0H22V3H20z\"/><path d=\"M12.768 3.268H14.768V6.268H12.768z\" transform=\"rotate(-45 13.768 4.768)\"/><path d=\"M27,11A5.9955,5.9955,0,0,0,15.6335,8.3311,7.3494,7.3494,0,0,0,13.5,8a7.5509,7.5509,0,0,0-7.1492,5.2441A5.9926,5.9926,0,0,0,8,25h7.3818L14.106,27.5527a1,1,0,1,0,1.7885.8946L17.6177,25H19a5.9853,5.9853,0,0,0,5.2163-8.9463A5.9941,5.9941,0,0,0,27,11ZM19,23H8a3.9925,3.9925,0,0,1-.6731-7.9292L7.99,14.958l.1458-.6562a5.496,5.496,0,0,1,10.7294,0l.1458.6562.6626.1128A3.9925,3.9925,0,0,1,19,23Zm3.9268-8.5107a5.96,5.96,0,0,0-2.2776-1.2452,7.5157,7.5157,0,0,0-3.1853-4.0688,3.9869,3.9869,0,1,1,5.4629,5.314Z\"/>","drizzleN":"<path d=\"M8.5084,32a1.0115,1.0115,0,0,1-.4485-.1055.9986.9986,0,0,1-.4486-1.3418l1.4934-3a1.0025,1.0025,0,0,1,1.7943.8945l-1.4934,3A1.0015,1.0015,0,0,1,8.5084,32Z\"/><path d=\"M29.8442,13.0347a1.5184,1.5184,0,0,0-1.2309-.8658,5.3587,5.3587,0,0,1-3.4094-1.7163,6.4648,6.4648,0,0,1-1.285-6.393,1.6031,1.6031,0,0,0-.3-1.5459,1.4535,1.4535,0,0,0-1.3594-.4922l-.0191.0029a7.8549,7.8549,0,0,0-6.1054,6.48A7.3725,7.3725,0,0,0,13.5,8a7.5511,7.5511,0,0,0-7.1494,5.2441A5.9926,5.9926,0,0,0,8,25h7.3818L14.106,27.5527a1,1,0,1,0,1.7885.8946L17.6177,25H19a5.9549,5.9549,0,0,0,5.88-7.1455,7.5,7.5,0,0,0,4.8672-3.3A1.5381,1.5381,0,0,0,29.8442,13.0347ZM19,23H8a3.9926,3.9926,0,0,1-.6733-7.9292l.663-.1128.1456-.6562a5.496,5.496,0,0,1,10.7294,0l.1456.6562.6626.1128A3.9925,3.9925,0,0,1,19,23Zm5.1509-7.0479a5.9639,5.9639,0,0,0-3.5015-2.708A7.5076,7.5076,0,0,0,18.0286,9.55a6.01,6.01,0,0,1,3.77-5.334,8.4581,8.4581,0,0,0,1.9395,7.5972A7.4007,7.4007,0,0,0,27.64,14.041,5.4392,5.4392,0,0,1,24.1509,15.9521Z\"/>","rain":"<path d=\"M23.5,22H8.5A6.5,6.5,0,0,1,7.2,9.14a9,9,0,0,1,17.6,0A6.5,6.5,0,0,1,23.5,22ZM16,4a7,7,0,0,0-6.94,6.14L9,11,8.14,11a4.5,4.5,0,0,0,.36,9h15a4.5,4.5,0,0,0,.36-9L23,11l-.1-.82A7,7,0,0,0,16,4Z\"/><path d=\"M14,30a.93.93,0,0,1-.45-.11,1,1,0,0,1-.44-1.34l2-4a1,1,0,1,1,1.78.9l-2,4A1,1,0,0,1,14,30Z\"/><path d=\"M20,30a.93.93,0,0,1-.45-.11,1,1,0,0,1-.44-1.34l2-4a1,1,0,1,1,1.78.9l-2,4A1,1,0,0,1,20,30Z\"/><path d=\"M8,30a.93.93,0,0,1-.45-.11,1,1,0,0,1-.44-1.34l2-4a1,1,0,1,1,1.78.9l-2,4A1,1,0,0,1,8,30Z\"/>","heavy":"<path d=\"M17,30a1,1,0,0,1-.8944-1.4474l2-4.0005a1,1,0,1,1,1.7888.8947l-2,4A.9981.9981,0,0,1,17,30Z\"/><path d=\"M8,30a1,1,0,0,1-.8944-1.4474l2-4.0005a1,1,0,1,1,1.7888.8947l-2,4A.9981.9981,0,0,1,8,30Z\"/><path d=\"M30,15.5a6.5323,6.5323,0,0,0-5.1992-6.3638,8.9943,8.9943,0,0,0-17.6006,0A6.4905,6.4905,0,0,0,5.7026,21.3584L4.106,24.5527a1,1,0,1,0,1.7885.8946L7.6174,22l6.7644,0L13.106,24.5527a1,1,0,1,0,1.7885.8946L16.6177,22h6.7641L22.106,24.5527a1,1,0,1,0,1.7885.8946l1.9444-3.89A6.5058,6.5058,0,0,0,30,15.5ZM23.5,20H8.5a4.4975,4.4975,0,0,1-.356-8.981l.8155-.0639.0991-.812a6.9938,6.9938,0,0,1,13.8838,0l.0986.812.8154.0639A4.4975,4.4975,0,0,1,23.5,20Z\"/>","sleet":"<path d=\"M6 24H8V26H6z\"/><path d=\"M8 26H10V28H8z\"/><path d=\"M10 28H12V30H10z\"/><path d=\"M10 24H12V26H10z\"/><path d=\"M6 28H8V30H6z\"/><path d=\"M21,30a1,1,0,0,1-.8944-1.4474l2-4.0005a1,1,0,1,1,1.7888.8947l-2,4A.9981.9981,0,0,1,21,30Z\"/><path d=\"M24.8008,9.1362a8.9943,8.9943,0,0,0-17.6006,0A6.4973,6.4973,0,0,0,8.5,22h8.8818L16.106,24.5527a1,1,0,1,0,1.7885.8946L19.6177,22H23.5A6.4974,6.4974,0,0,0,24.8008,9.1362ZM23.5,20H8.5a4.4975,4.4975,0,0,1-.356-8.981l.8155-.0639.0991-.812a6.9938,6.9938,0,0,1,13.8838,0l.0986.812.8154.0639A4.4975,4.4975,0,0,1,23.5,20Z\"/>","snow":"<path d=\"M23.5,22H8.5A6.5,6.5,0,0,1,7.2,9.14a9,9,0,0,1,17.6,0A6.5,6.5,0,0,1,23.5,22ZM16,4a7,7,0,0,0-6.94,6.14L9,11,8.14,11a4.5,4.5,0,0,0,.36,9h15a4.5,4.5,0,0,0,.36-9L23,11l-.1-.82A7,7,0,0,0,16,4Z\"/><path d=\"M12 25.05 10.95 24 9.5 25.45 8.05 24 7 25.05 8.45 26.5 7 27.95 8.05 29 9.5 27.55 10.95 29 12 27.95 10.55 26.5 12 25.05z\"/><path d=\"M26 25.05 24.95 24 23.5 25.45 22.05 24 21 25.05 22.45 26.5 21 27.95 22.05 29 23.5 27.55 24.95 29 26 27.95 24.55 26.5 26 25.05z\"/><path d=\"M19 27.05 17.95 26 16.5 27.45 15.05 26 14 27.05 15.45 28.5 14 29.95 15.05 31 16.5 29.55 17.95 31 19 29.95 17.55 28.5 19 27.05z\"/>","thunder":"<path d=\"M23.5,22H23V20h.5a4.5,4.5,0,0,0,.36-9L23,11l-.1-.82a7,7,0,0,0-13.88,0L9,11,8.14,11a4.5,4.5,0,0,0,.36,9H9v2H8.5A6.5,6.5,0,0,1,7.2,9.14a9,9,0,0,1,17.6,0A6.5,6.5,0,0,1,23.5,22Z\"/><path d=\"M15.87 30.5 14.13 29.5 17.28 24 11.28 24 16.13 15.5 17.87 16.5 14.72 22 20.72 22 15.87 30.5z\"/>","search":"<path d=\"M29,27.5859l-7.5521-7.5521a11.0177,11.0177,0,1,0-1.4141,1.4141L27.5859,29ZM4,13a9,9,0,1,1,9,9A9.01,9.01,0,0,1,4,13Z\"/>","location":"<path d=\"M16,18a5,5,0,1,1,5-5A5.0057,5.0057,0,0,1,16,18Zm0-8a3,3,0,1,0,3,3A3.0033,3.0033,0,0,0,16,10Z\"/><path d=\"M16,30,7.5645,20.0513c-.0479-.0571-.3482-.4515-.3482-.4515A10.8888,10.8888,0,0,1,5,13a11,11,0,0,1,22,0,10.8844,10.8844,0,0,1-2.2148,6.5973l-.0015.0025s-.3.3944-.3447.4474ZM8.8125,18.395c.001.0007.2334.3082.2866.3744L16,26.9079l6.91-8.15c.0439-.0552.2783-.3649.2788-.3657A8.901,8.901,0,0,0,25,13,9,9,0,1,0,7,13a8.9054,8.9054,0,0,0,1.8125,5.395Z\"/>","renew":"<path d=\"M12,10H6.78A11,11,0,0,1,27,16h2A13,13,0,0,0,6,7.68V4H4v8h8Z\"/><path d=\"M20,22h5.22A11,11,0,0,1,5,16H3a13,13,0,0,0,23,8.32V28h2V20H20Z\"/>","launch":"<path d=\"M26,28H6a2.0027,2.0027,0,0,1-2-2V6A2.0027,2.0027,0,0,1,6,4H16V6H6V26H26V16h2V26A2.0027,2.0027,0,0,1,26,28Z\"/><path d=\"M20 2 20 4 26.586 4 18 12.586 19.414 14 28 5.414 28 12 30 12 30 2 20 2z\"/>","wind":"<path d=\"M25,2,23.5859,3.4141,26.1719,6h-5.09a16.93,16.93,0,0,0-6.3139,1.2158L10.4893,8.9272A14.93,14.93,0,0,1,4.9185,10H2v2H4.9185a16.93,16.93,0,0,0,6.3139-1.2158l4.2783-1.7114A14.93,14.93,0,0,1,21.0815,8h5.09l-2.586,2.5859L25,12l5-5Z\"/><path d=\"M21,11l-1.4141,1.4141L22.1719,15H18.9014a16.9422,16.9422,0,0,0-5.9693,1.0825l-2.5664.9624A14.9456,14.9456,0,0,1,5.0986,18H2v2H5.0986a16.9422,16.9422,0,0,0,5.9693-1.0825l2.5664-.9624A14.9456,14.9456,0,0,1,18.9014,17h3.2705l-2.586,2.5859L21,21l5-5Z\"/><path d=\"M17,20l-1.4141,1.4141L18.1719,24H16.5967a16.9879,16.9879,0,0,0-5.3765.8721l-1.0727.3584A14.9852,14.9852,0,0,1,5.4033,26H2v2H5.4033a16.9879,16.9879,0,0,0,5.3765-.8721l1.0727-.3584A14.9852,14.9852,0,0,1,16.5967,26h1.5752l-2.586,2.5859L17,30l5-5Z\"/>","umbrella":"<path d=\"M29.9854,15.83A14.3808,14.3808,0,0,0,17,4.0464V2H15V4.0464A14.3808,14.3808,0,0,0,2.0146,15.83,1,1,0,0,0,3.51,16.86,4.8551,4.8551,0,0,1,6,16a4.8653,4.8653,0,0,1,4.1406,2.5107,1.0393,1.0393,0,0,0,1.7188,0A5.02,5.02,0,0,1,15,16.1255V25.5a2.5,2.5,0,0,1-5,0V25H8v.5a4.5,4.5,0,0,0,9,0V16.1255a5.02,5.02,0,0,1,3.1406,2.3852.9994.9994,0,0,0,1.7188,0A4.8653,4.8653,0,0,1,26,16a4.8551,4.8551,0,0,1,2.49.86,1,1,0,0,0,1.4957-1.03ZM6,14a5.4079,5.4079,0,0,0-1.5034.2134,12.4411,12.4411,0,0,1,8.488-7.8145A14.5157,14.5157,0,0,0,9.939,15.333,6.5439,6.5439,0,0,0,6,14Zm10,0a6.5528,6.5528,0,0,0-4.0564,1.4307c.0378-2.22.6089-6.49,4.0563-9.1763,3.4308,2.6768,4.0091,6.9487,4.0525,9.1728A6.553,6.553,0,0,0,16,14Zm10,0a6.5439,6.5439,0,0,0-3.939,1.333,14.5164,14.5164,0,0,0-3.0456-8.9341,12.4411,12.4411,0,0,1,8.488,7.8145A5.4079,5.4079,0,0,0,26,14Z\"/>","warn":"<path fill=\"none\" d=\"M16,26a1.5,1.5,0,1,1,1.5-1.5A1.5,1.5,0,0,1,16,26Zm-1.125-5h2.25V12h-2.25Z\" data-icon-path=\"inner-path\"/><path d=\"M16.002,6.1714h-.004L4.6487,27.9966,4.6506,28H27.3494l.0019-.0034ZM14.875,12h2.25v9h-2.25ZM16,26a1.5,1.5,0,1,1,1.5-1.5A1.5,1.5,0,0,1,16,26Z\"/><path d=\"M29,30H3a1,1,0,0,1-.8872-1.4614l13-25a1,1,0,0,1,1.7744,0l13,25A1,1,0,0,1,29,30ZM4.6507,28H27.3493l.002-.0033L16.002,6.1714h-.004L4.6487,27.9967Z\"/>","ok":"<path d=\"M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2ZM14,21.5908l-5-5L10.5906,15,14,18.4092,21.41,11l1.5957,1.5859Z\"/><path fill=\"none\" d=\"M14 21.591 9 16.591 10.591 15 14 18.409 21.41 11 23.005 12.585 14 21.591z\" data-icon-path=\"inner-path\"/>","err":"<path d=\"M16,2C8.3,2,2,8.3,2,16s6.3,14,14,14s14-6.3,14-14S23.7,2,16,2z M21.4,23L16,17.6L10.6,23L9,21.4l5.4-5.4L9,10.6L10.6,9 l5.4,5.4L21.4,9l1.6,1.6L17.6,16l5.4,5.4L21.4,23z\"/><path fill=\"none\" d=\"M21.4,23L16,17.6L10.6,23L9,21.4l5.4-5.4L9,10.6L10.6,9l5.4,5.4L21.4,9l1.6,1.6L17.6,16 l5.4,5.4L21.4,23z\" data-icon-path=\"inner-path\" opacity=\"0\"/>","temp":"<path d=\"M13,17.26V6A4,4,0,0,0,5,6V17.26a7,7,0,1,0,8,0ZM9,4a2,2,0,0,1,2,2v7H7V6A2,2,0,0,1,9,4ZM9,28a5,5,0,0,1-2.5-9.33l.5-.28V15h4v3.39l.5.28A5,5,0,0,1,9,28Z\"/><path d=\"M20 4H30V6H20z\"/><path d=\"M20 10H27V12H20z\"/><path d=\"M20 16H30V18H20z\"/><path d=\"M20 22H27V24H20z\"/>"};
+const ic = (n, cls = '') => `<svg class="cds-icon ${cls}" viewBox="0 0 32 32" aria-hidden="true">${ICON[n]}</svg>`;
+const SNAP = window.TRE_METEO_SNAPSHOT || null; // preview mode: frozen data, no network
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+// ---------- weather categories → emoji ----------
+const EMO = {
+  clear: ['sun', 'moon'], partly: ['partly', 'partlyN'], cloudy: ['cloudy', 'cloudy'], fog: ['fog', 'fog'],
+  lightrain: ['drizzle', 'drizzleN'], rain: ['rain', 'rain'], heavyrain: ['heavy', 'heavy'],
+  sleet: ['sleet', 'sleet'], snow: ['snow', 'snow'], thunder: ['thunder', 'thunder'],
+};
+const RANK = { clear: 0, partly: 1, cloudy: 2, fog: 2, lightrain: 3, rain: 4, sleet: 4, snow: 4, heavyrain: 5, thunder: 6 };
+const LABEL = { clear: 'Sereno', partly: 'Poco nuvoloso', cloudy: 'Nuvoloso', fog: 'Nebbia', lightrain: 'Pioggia debole', rain: 'Pioggia', heavyrain: 'Pioggia forte', sleet: 'Pioggia e neve', snow: 'Neve', thunder: 'Temporale' };
+const emo = (cat, night) => cat ? `<svg class="cds-icon wx" viewBox="0 0 32 32" role="img" aria-label="${LABEL[cat]}"><title>${LABEL[cat]}</title>${ICON[EMO[cat][night ? 1 : 0]]}</svg>` : '·';
+
+function yrCat(sym) {
+  if (!sym) return null;
+  const s = sym.replace(/_(day|night|polartwilight)$/, '');
+  if (s.includes('thunder')) return 'thunder';
+  if (s.includes('sleet')) return 'sleet';
+  if (s.includes('snow')) return 'snow';
+  if (s.startsWith('heavyrain')) return 'heavyrain';
+  if (s.startsWith('light') || s === 'rainshowers') return 'lightrain';
+  if (s.includes('rain')) return 'rain';
+  if (s === 'fog') return 'fog';
+  if (s === 'cloudy') return 'cloudy';
+  if (s === 'fair' || s === 'partlycloudy') return 'partly';
+  if (s === 'clearsky') return 'clear';
+  return 'cloudy';
+}
+function amCat(code) {
+  const c = parseInt(code, 10);
+  if (isNaN(c)) return null;
+  if (c === 1 || c === 19 || c === 31) return 'clear';
+  if ([2, 3, 4, 20, 21, 32, 33, 34].includes(c)) return 'partly';
+  if ([5, 6, 22, 35].includes(c)) return 'cloudy';
+  if (c === 7) return 'lightrain';
+  if (c === 8) return 'heavyrain';
+  if (c === 9 || c === 14) return 'thunder';
+  if (c === 10 || c === 11) return 'sleet';
+  if ([12, 13, 23, 36].includes(c)) return 'fog';
+  if (c === 15) return 'snow';
+  return 'cloudy';
+}
+function wmoCat(c) {
+  if (c == null) return null;
+  if (c === 0) return 'clear';
+  if (c <= 2) return 'partly';
+  if (c === 3) return 'cloudy';
+  if (c === 45 || c === 48) return 'fog';
+  if ((c >= 51 && c <= 57) || c === 61 || c === 80) return 'lightrain';
+  if (c === 63 || c === 81) return 'rain';
+  if (c === 65 || c === 82) return 'heavyrain';
+  if (c === 66 || c === 67) return 'sleet';
+  if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
+  if (c >= 95) return 'thunder';
+  return 'cloudy';
+}
+
+// ---------- helpers ----------
+const dayKey = d => { const x = new Date(d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
+const fmtHour = d => new Date(d).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+const fmtDay = (k, i) => {
+  if (i === 0) return 'Oggi';
+  if (i === 1) return 'Domani';
+  const [y, m, d] = k.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric' });
+};
+const r1 = v => v == null || isNaN(v) ? '–' : (Math.round(v * 10) / 10).toLocaleString('it-IT');
+const r0 = v => v == null || isNaN(v) ? '–' : Math.round(v);
+const isNight = t => { const h = new Date(t).getHours(); return h < 7 || h >= 18; };
+
+async function getJSON(url, ms = 15000) {
+  if (SNAP) return SNAP.resolve(url);
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctl.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+
+// Normalized: points [{t,temp,wind,cat,night}], precip [{a,b,mm}], daily {date:{min,max,mm,cat}}
+
+async function loadYr(lat, lon) {
+  const j = await getJSON(`https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`);
+  const ts = j.properties.timeseries;
+  const points = [], precip = [], daily = {};
+  ts.forEach((e, i) => {
+    const t = Date.parse(e.time);
+    const d = e.data, inst = d.instant.details;
+    const step = i < ts.length - 1 ? (Date.parse(ts[i + 1].time) - t) / H : 6;
+    const sym = (d.next_1_hours || d.next_6_hours || d.next_12_hours || {}).summary?.symbol_code;
+    points.push({ t, temp: inst.air_temperature, wind: inst.wind_speed != null ? inst.wind_speed * 3.6 : null, cat: yrCat(sym), night: /_night/.test(sym || '') });
+    let mm = null, dur = step;
+    if (step <= 1.01 && d.next_1_hours) { mm = d.next_1_hours.details?.precipitation_amount; dur = 1; }
+    else if (d.next_6_hours) { mm = d.next_6_hours.details?.precipitation_amount; dur = 6; }
+    if (mm != null) precip.push({ a: t, b: t + dur * H, mm });
+    const k = dayKey(t);
+    const D = daily[k] || (daily[k] = { min: Infinity, max: -Infinity, mm: 0, cat: null, _best: 99 });
+    D.min = Math.min(D.min, inst.air_temperature); D.max = Math.max(D.max, inst.air_temperature);
+    if (d.next_6_hours?.details) {
+      const n6 = d.next_6_hours.details;
+      if (n6.air_temperature_max != null && dayKey(t + 5 * H) === k) { D.max = Math.max(D.max, n6.air_temperature_max); D.min = Math.min(D.min, n6.air_temperature_min); }
+    }
+    // representative daytime symbol: 6h block closest to 10:00 local
+    const hh = new Date(t).getHours();
+    if (d.next_6_hours && Math.abs(hh - 10) < D._best) { D._best = Math.abs(hh - 10); D.cat = yrCat(d.next_6_hours.summary.symbol_code); }
+  });
+  addDailyRain(daily, precip, 'start');
+  return { points, precip, daily };
+}
+
+async function loadAM(lat, lon) {
+  const j = await getJSON(`https://api.meteoam.it/deda-meteograms/api/GetMeteogram/preset1/${lat.toFixed(4)},${lon.toFixed(4)}`);
+  const P = {}; j.paramlist.forEach((p, i) => P[p] = j.datasets['0'][i]);
+  const times = j.timeseries.map(Date.parse);
+  const val = (p, i) => { const v = P[p] && P[p][i]; return v === undefined || v === null || v === '-' ? null : v; };
+  const points = [], precip = [], prob = [], daily = {};
+  times.forEach((t, i) => {
+    const temp = val('2t', i);
+    const ic = val('icon', i);
+    const c = parseInt(ic, 10);
+    points.push({ t, temp: temp == null ? null : +temp, wind: val('wkmh', i) == null ? null : +val('wkmh', i), cat: amCat(ic), night: (c >= 19 && c <= 23) || (c >= 31 && c <= 36) });
+    const pp = val('tpp', i);
+    if (pp != null) prob.push({ t, p: +pp });
+  });
+  for (const s of j.extrainfo?.stats || []) {
+    if (s.minCelsius == null || s.minCelsius === '-' ) continue;
+    const k = s.localDate.slice(0, 10);
+    daily[k] = { min: +s.minCelsius, max: +s.maxCelsius, mm: 0, cat: amCat(s.icon) };
+  }
+  // AM gives only the probability of precipitation (%), not millimetres
+  prob.forEach(q => { const D = daily[dayKey(q.t)]; if (D) D.prob = Math.max(D.prob || 0, q.p); });
+  for (const k in daily) daily[k].wet = (daily[k].prob || 0) >= 50;
+  return { points, precip, prob, daily, isProb: true };
+}
+
+async function loadWindy(lat, lon) {
+  const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&hourly=temperature_2m,precipitation,weather_code,wind_speed_10m,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&models=ecmwf_ifs&timezone=GMT&forecast_days=7`);
+  const h = j.hourly, points = [], precip = [], daily = {};
+  h.time.forEach((s, i) => {
+    const t = Date.parse(s + 'Z');
+    if (h.temperature_2m[i] == null) return;
+    points.push({ t, temp: h.temperature_2m[i], wind: h.wind_speed_10m[i], cat: wmoCat(h.weather_code[i]), night: h.is_day[i] === 0 });
+    if (h.precipitation[i] != null) precip.push({ a: t - H, b: t, mm: h.precipitation[i] });
+  });
+  // daily from hourly in local time (API daily is in GMT here)
+  points.forEach(p => {
+    const k = dayKey(p.t);
+    const D = daily[k] || (daily[k] = { min: Infinity, max: -Infinity, mm: 0, cat: null, _rank: -1, _n: 0 });
+    D.min = Math.min(D.min, p.temp); D.max = Math.max(D.max, p.temp); D._n++;
+  });
+  // daytime representative: worst weather between 08 and 20
+  const tally = {};
+  points.forEach(p => {
+    const hh = new Date(p.t).getHours(); if (hh < 8 || hh > 20) return;
+    const k = dayKey(p.t); (tally[k] = tally[k] || {}); tally[k][p.cat] = (tally[k][p.cat] || 0) + 1;
+  });
+  for (const k in tally) daily[k] && (daily[k].cat = dominant(tally[k]));
+  for (const k in daily) if (daily[k]._n < 18) delete daily[k];
+  addDailyRain(daily, precip);
+  return { points, precip, daily };
+}
+
+// pick the category that dominates daytime, but let rain/thunder win if it lasts ≥ 2 hours
+function dominant(t) {
+  const wet = Object.keys(t).filter(c => RANK[c] >= 3 && t[c] >= 2).sort((a, b) => RANK[b] - RANK[a]);
+  if (wet.length) return wet[0];
+  return Object.keys(t).sort((a, b) => t[b] - t[a] || RANK[b] - RANK[a])[0];
+}
+
+function addDailyRain(daily, precip) {
+  for (const k in daily) daily[k].mm = 0;
+  precip.forEach(p => {
+    // split interval across local days proportionally
+    let a = p.a; const tot = p.b - p.a;
+    while (a < p.b) {
+      const d = new Date(a); const next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+      const b = Math.min(next, p.b);
+      const k = dayKey(a);
+      if (daily[k]) daily[k].mm += p.mm * (b - a) / tot;
+      a = b;
+    }
+  });
+}
+
+function rainIn(precip, a, b) {
+  let s = 0, covered = 0;
+  for (const p of precip) {
+    const o = Math.min(b, p.b) - Math.max(a, p.a);
+    if (o > 0) { s += p.mm * o / (p.b - p.a); covered += o; }
+  }
+  return covered >= (b - a) * 0.5 ? s : null;
+}
+function probIn(prob, a, b) {
+  let m = null;
+  for (const q of prob) if (q.t >= a && q.t < b) m = Math.max(m ?? 0, q.p);
+  return m;
+}
+function nearest(points, t, maxGapH = 1.6) {
+  let best = null, bd = Infinity;
+  for (const p of points) { const d = Math.abs(p.t - t); if (d < bd && p.temp != null) { bd = d; best = p; } }
+  return bd <= maxGapH * H ? best : null;
+}
+function interp(points, t) {
+  for (let i = 0; i < points.length - 1; i++) {
+    const p = points[i], q = points[i + 1];
+    if (p.t <= t && q.t >= t && p.temp != null && q.temp != null) {
+      if (q.t - p.t > 6.1 * H) return null;
+      return p.temp + (q.temp - p.temp) * (t - p.t) / (q.t - p.t || 1);
+    }
+  }
+  return null;
+}
+
+// ---------- rendering ----------
+function renderNow(data, now) {
+  $('now').innerHTML = SRC.map((s, i) => {
+    const d = data[i];
+    if (!d) return `<div class="card" style="--c:${s.color}"><div class="src"><i class="dot ${s.cls}"></i>${s.name}</div><div class="err">non disponibile</div></div>`;
+    const p = nearest(d.points, now, 3);
+    const mm = rainIn(d.precip, now, now + 3 * H);
+    const pr = d.isProb ? probIn(d.prob, now, now + 3 * H) : null;
+    return `<div class="card" style="--c:${s.color}">
+      <div class="src"><i class="dot ${s.cls}"></i>${s.name}</div>
+      <div class="emo" title="${p && p.cat ? LABEL[p.cat] : ''}">${p ? emo(p.cat, isNight(now)) : '·'}</div>
+      <div class="t">${p ? r0(p.temp) + '°' : '–'}</div>
+      <div class="meta">${ic('wind')} ${p && p.wind != null ? r0(p.wind) : '–'} km/h</div>
+      <div class="meta">${ic('umbrella')} ${d.isProb ? (pr == null ? '–' : pr + '%') : (mm == null ? '–' : r1(mm) + ' mm')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- running outfit ----------
+const RUN_KEY = 'runHour';
+let runState = null;
+
+function windChill(t, v) {
+  if (t > 10 || v == null || v <= 4.8) return t;
+  const p = Math.pow(v, 0.16);
+  return 13.12 + 0.6215 * t - 11.37 * p + 0.3965 * t * p;
+}
+
+// consensus of the three sources for a 1-hour run starting at t
+function conditionsAt(data, t) {
+  const temps = [], winds = [], cats = [];
+  let mmSum = 0, mmN = 0, wetVotes = 0, prob = null, night = null;
+  data.forEach((d, i) => {
+    if (!d) return;
+    const v = interp(d.points, t);
+    if (v != null) temps.push(v);
+    const p = nearest(d.points, t, 3.1);
+    if (p) { if (p.wind != null) winds.push(p.wind); if (p.cat) cats.push(p.cat); if (i === 2) night = p.night; }
+    if (d.isProb) { prob = probIn(d.prob, t, t + 3 * H); if (prob != null && prob >= 50) wetVotes++; }
+    else { const mm = rainIn(d.precip, t, t + H); if (mm != null) { mmSum += mm; mmN++; if (mm >= 0.2) wetVotes++; } }
+  });
+  if (!temps.length) return null;
+  const avg = a => a.reduce((s, x) => s + x, 0) / a.length;
+  const temp = avg(temps), wind = winds.length ? avg(winds) : null;
+  const tally = {}; cats.forEach(c => tally[c] = (tally[c] || 0) + 1);
+  if (night == null) night = isNight(t);
+  return {
+    t, temp, wind, feels: windChill(temp, wind), spread: Math.max(...temps) - Math.min(...temps),
+    mm: mmN ? mmSum / mmN : null, prob, wetVotes, sources: temps.length,
+    cat: cats.length ? dominant(tally) : null, night,
+  };
+}
+
+function outfit(c) {
+  const f = c.feels, out = [], notes = [];
+  const add = (part, text) => out.push({ part, text });
+  if (f >= 22) {
+    add('Busto', 'Canotta o maglia tecnica leggerissima');
+    add('Gambe', 'Pantaloncini corti');
+    add('Testa', 'Cappellino traspirante');
+    notes.push('Fa caldo: corri piano, porta acqua e scegli le ore più fresche.');
+  } else if (f >= 16) {
+    add('Busto', 'Maglia tecnica a maniche corte');
+    add('Gambe', 'Pantaloncini corti');
+  } else if (f >= 11) {
+    add('Busto', 'Maglia tecnica a maniche corte (o lunghe leggere se parti piano)');
+    add('Gambe', 'Pantaloncini corti');
+  } else if (f >= 6) {
+    add('Busto', 'Maglia tecnica a maniche lunghe');
+    add('Gambe', f < 8 ? 'Calzamaglia leggera o pantaloncini con 3/4' : 'Pantaloncini o 3/4');
+    if (f < 8) add('Mani', 'Guanti leggeri (facili da togliere)');
+  } else if (f >= 1) {
+    add('Busto', 'Maglia termica a maniche lunghe + gilet o giacca antivento leggera');
+    add('Gambe', 'Calzamaglia lunga');
+    add('Mani', 'Guanti leggeri');
+    add('Testa', 'Fascia paraorecchie');
+  } else if (f >= -5) {
+    add('Busto', 'Maglia termica + giacca antivento');
+    add('Gambe', 'Calzamaglia invernale felpata');
+    add('Mani', 'Guanti invernali');
+    add('Testa', 'Berretto e scaldacollo');
+  } else {
+    add('Busto', 'Tre strati: termica, pile leggero, giacca antivento');
+    add('Gambe', 'Calzamaglia invernale (o due strati)');
+    add('Mani', 'Guanti pesanti o muffole');
+    add('Testa', 'Berretto, scaldacollo/buff');
+    add('Piedi', 'Calze in lana tecnica');
+    notes.push('Freddo intenso: copri la pelle esposta e accorcia l\'uscita se c\'è vento.');
+  }
+  const rainy = c.wetVotes >= 2 || (c.mm != null && c.mm >= 0.5);
+  const maybeRain = !rainy && c.wetVotes === 1;
+  if (rainy) { add('Pioggia', 'Giacca antipioggia leggera e cappellino con visiera'); notes.push('Evita il cotone: una volta bagnato resta freddo.'); }
+  else if (maybeRain) add('Pioggia', 'Pioggia possibile: antivento idrorepellente in tasca o legato in vita');
+  if (c.wind != null && c.wind >= 20 && f < 16 && !out.some(o => /antivento|giacca/i.test(o.text))) add('Vento', 'Gilet o giacca antivento');
+  if (c.night) add('Visibilità', 'È buio: capi riflettenti e luce frontale o da braccio');
+  else if (c.cat === 'fog') add('Visibilità', 'Nebbia: colori accesi o riflettenti');
+  if (!c.night && (c.cat === 'clear' || c.cat === 'partly') && c.temp >= 14) add('Sole', 'Occhiali da sole e crema solare');
+  if (c.spread > 3) notes.push(`Le fonti differiscono di ${r0(c.spread)}°: scegli capi a strati da togliere strada facendo.`);
+  return { items: out, notes };
+}
+
+function renderRun(data, now) {
+  const start = Math.floor(now / H) * H;
+  const hours = Array.from({ length: 48 }, (_, i) => start + i * H);
+  const conds = hours.map(t => conditionsAt(data, t));
+  const pref = store.get(RUN_KEY);
+  let sel = 0;
+  if (pref != null) { const k = hours.findIndex(t => new Date(t).getHours() === pref); if (k > 0) sel = k; }
+  runState = { hours, conds, sel };
+  $('runHours').innerHTML = hours.map((t, i) => {
+    const c = conds[i]; const d = new Date(t); const hh = d.getHours();
+    const lbl = i === 0 ? 'Ora' : String(hh).padStart(2, '0');
+    const day = `<span class="rh-day">${i === 0 ? 'oggi' : hh === 0 ? d.toLocaleDateString('it-IT', { weekday: 'short' }) : ''}</span>`;
+    return `<button class="rh" data-i="${i}" aria-pressed="false">${day}<span class="rh-h">${lbl}</span><span class="rh-e">${c ? emo(c.cat, c.night) : '·'}</span><span class="rh-t">${c ? r0(c.temp) + '°' : '–'}</span></button>`;
+  }).join('');
+  $('runHours').querySelectorAll('.rh').forEach(b => b.onclick = () => {
+    const i = +b.dataset.i; runState.sel = i;
+    if (i > 0) store.set(RUN_KEY, new Date(hours[i]).getHours());
+    renderRunDetail();
+  });
+  renderRunDetail(true);
+}
+
+function renderRunDetail(scroll) {
+  const { hours, conds, sel } = runState;
+  $('runHours').querySelectorAll('.rh').forEach((b, i) => b.setAttribute('aria-pressed', i === sel));
+  if (scroll) { const b = $('runHours').children[sel]; if (b) $('runHours').scrollLeft = b.offsetLeft - 40; }
+  const c = conds[sel];
+  if (!c) { $('runDetail').innerHTML = '<div class="hint">Dati non disponibili per quest\'ora.</div>'; return; }
+  const d = new Date(hours[sel]);
+  const when = sel === 0 ? 'Adesso' : d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric' }) + ' · ' + fmtHour(hours[sel]);
+  const rain = c.wetVotes >= 2 ? 'pioggia probabile' : c.wetVotes === 1 ? 'pioggia possibile' : 'asciutto';
+  const feels = Math.abs(c.feels - c.temp) >= 1 ? ` (percepiti ${r0(c.feels)}°)` : '';
+  const { items, notes } = outfit(c);
+  $('runDetail').innerHTML = `
+    <div class="run-when">${when}</div>
+    <div class="run-cond">${emo(c.cat, c.night)} <span>${r0(c.temp)}°${feels} · vento ${c.wind == null ? '–' : r0(c.wind) + ' km/h'} · ${rain}${c.prob != null ? ` (AM ${c.prob}%)` : ''}</span></div>
+    <div class="run-list">${items.map(o => `<div class="run-item"><span class="run-part">${o.part}</span><span>${o.text}</span></div>`).join('')}</div>
+    ${notes.map(n => `<div class="hint">${n}</div>`).join('')}
+    <div class="hint">Regola usata: vestirsi come se facessero circa 10° in più, perché correndo ci si scalda. Media delle tre fonti.</div>`;
+}
+
+let chartState = null;
+function renderChart(data, now) {
+  const svg = $('chart');
+  const W = 340, Hh = 170, L = 28, R = 8, T = 10, B = 24;
+  const t0 = Math.floor(now / H) * H, t1 = t0 + 48 * H;
+  const series = data.map(d => d ? d.points.filter(p => p.t >= t0 - 3 * H && p.t <= t1 + 3 * H && p.temp != null) : []);
+  const all = series.flat().filter(p => p.t >= t0 && p.t <= t1).map(p => p.temp);
+  if (!all.length) { svg.innerHTML = ''; return; }
+  let lo = Math.floor(Math.min(...all) - 1), hi = Math.ceil(Math.max(...all) + 1);
+  const span = hi - lo; const stepY = span > 16 ? 5 : span > 8 ? 2 : 1;
+  lo = Math.floor(lo / stepY) * stepY; hi = Math.ceil(hi / stepY) * stepY;
+  const x = t => L + (t - t0) / (t1 - t0) * (W - L - R);
+  const y = v => T + (hi - v) / (hi - lo) * (Hh - T - B);
+  let g = '';
+  for (let v = lo; v <= hi; v += stepY) {
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--border-subtle)" stroke-width="1"/>`;
+    g += `<text x="${L - 6}" y="${y(v) + 3.5}" text-anchor="end" font-size="10" fill="var(--text-helper)">${v}°</text>`;
+  }
+  // midnight markers + 6h ticks
+  for (let t = t0; t <= t1; t += H) {
+    const d = new Date(t), hh = d.getHours();
+    if (hh === 0) {
+      g += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${Hh - B}" stroke="var(--border-strong)" stroke-width="1" stroke-dasharray="2 3"/>`;
+      g += `<text x="${x(t) + 3}" y="${T + 8}" font-size="9.5" fill="var(--text-helper)">${d.toLocaleDateString('it-IT', { weekday: 'short' })}</text>`;
+    }
+    if (hh % 6 === 0) g += `<text x="${x(t)}" y="${Hh - B + 14}" text-anchor="middle" font-size="10" fill="var(--text-helper)">${String(hh).padStart(2, '0')}</text>`;
+  }
+  // clip lines to window
+  g += `<defs><clipPath id="clip"><rect x="${L}" y="0" width="${W - L - R}" height="${Hh}"/></clipPath></defs>`;
+  series.forEach((pts, i) => {
+    if (pts.length < 2) return;
+    const dPath = pts.map((p, j) => (j ? 'L' : 'M') + x(p.t).toFixed(1) + ' ' + y(p.temp).toFixed(1)).join(' ');
+    g += `<path d="${dPath}" fill="none" stroke="${SRC[i].color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" clip-path="url(#clip)"/>`;
+  });
+  g += `<g id="cross" style="display:none"><line id="crossLine" y1="${T}" y2="${Hh - B}" stroke="var(--text-primary)" stroke-width="1"/>${SRC.map((s, i) => `<circle id="cd${i}" r="4" fill="${s.color}" stroke="var(--layer)" stroke-width="2"/>`).join('')}</g>`;
+  g += `<rect id="hit" x="${L}" y="0" width="${W - L - R}" height="${Hh}" fill="transparent"/>`;
+  svg.innerHTML = g;
+  chartState = { data, x, y, t0, t1, L, R, W };
+}
+
+function setupChartInteraction() {
+  const wrap = $('chartWrap'), svg = $('chart'), tip = $('tip');
+  const move = ev => {
+    if (!chartState) return;
+    const { data, x, y, t0, t1, L, R, W } = chartState;
+    const rect = svg.getBoundingClientRect();
+    const px = (ev.clientX - rect.left) / rect.width * W;
+    if (px < L || px > W - R) return hide();
+    let t = t0 + (px - L) / (W - L - R) * (t1 - t0);
+    t = Math.round(t / H) * H;
+    $('cross').style.display = '';
+    $('crossLine').setAttribute('x1', x(t)); $('crossLine').setAttribute('x2', x(t));
+    const rows = SRC.map((s, i) => {
+      const v = data[i] ? interp(data[i].points, t) : null;
+      const c = $('cd' + i);
+      if (v == null) { c.style.display = 'none'; } else { c.style.display = ''; c.setAttribute('cx', x(t)); c.setAttribute('cy', y(v)); }
+      return `<div><i class="dot ${s.cls}"></i>${s.name}: <strong>${v == null ? '–' : r1(v) + '°'}</strong></div>`;
+    }).join('');
+    const d = new Date(t);
+    tip.innerHTML = `<b>${d.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric' })} · ${fmtHour(t)}</b>${rows}`;
+    tip.style.display = 'block';
+    const xp = x(t) / W * rect.width;
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(rect.width - tw, xp + (xp > rect.width / 2 ? -tw - 12 : 12))) + 'px';
+  };
+  const hide = () => { tip.style.display = 'none'; const c = $('cross'); if (c) c.style.display = 'none'; };
+  wrap.addEventListener('pointermove', move);
+  wrap.addEventListener('pointerdown', move);
+  wrap.addEventListener('pointerleave', hide);
+}
+
+function renderRain(data, now) {
+  const t0 = Math.floor(now / (3 * H)) * 3 * H;
+  const blocks = Array.from({ length: 16 }, (_, i) => t0 + i * 3 * H);
+  const cls = mm => mm == null ? '' : mm < 0.1 ? '' : mm < 1 ? 'r1' : mm < 4 ? 'r2' : mm < 10 ? 'r3' : 'r4';
+  let head = '<tr><th class="rowh"></th>' + blocks.map(b => {
+    const d = new Date(b); const hh = d.getHours();
+    return `<th class="${hh < 3 ? 'day-sep' : ''}">${hh < 3 ? d.toLocaleDateString('it-IT', { weekday: 'short' }) : String(hh).padStart(2, '0')}</th>`;
+  }).join('') + '</tr>';
+  const rows = SRC.map((s, i) => '<tr><th class="rowh"><i class="dot ' + s.cls + '"></i></th>' + blocks.map(b => {
+    if (data[i] && data[i].isProb) {
+      const p = probIn(data[i].prob, b, b + 3 * H);
+      const pc = p == null || p < 20 ? '' : p < 40 ? 'r1' : p < 60 ? 'r2' : p < 80 ? 'r3' : 'r4';
+      return `<td class="${pc}" title="${s.name}: ${p == null ? 'n.d.' : p + '% probabilità'}">${p == null ? '–' : p < 10 ? '' : p + '%'}</td>`;
+    }
+    const mm = data[i] ? rainIn(data[i].precip, b, b + 3 * H) : null;
+    const txt = mm == null ? '–' : mm < 0.1 ? '' : mm < 10 ? r1(mm) : r0(mm);
+    return `<td class="${cls(mm)}" title="${s.name}: ${mm == null ? 'n.d.' : r1(mm) + ' mm'}">${txt}</td>`;
+  }).join('') + '</tr>').join('');
+  $('rain').innerHTML = `<table>${head}${rows}</table>`;
+  $('rainNote').classList.toggle('hidden', !data.some(d => d && d.isProb));
+}
+
+function renderDays(data, now) {
+  const keys = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(now); d.setDate(d.getDate() + i); keys.push(dayKey(d)); }
+  $('days').innerHTML = keys.map((k, idx) => {
+    const ds = data.map(d => d && d.daily[k] && isFinite(d.daily[k].max) ? d.daily[k] : null);
+    const have = ds.filter(Boolean);
+    if (!have.length) return '';
+    let badge = '';
+    if (have.length >= 2) {
+      const maxs = have.map(d => d.max), mins = have.map(d => d.min);
+      const spread = Math.max(Math.max(...maxs) - Math.min(...maxs), Math.max(...mins) - Math.min(...mins));
+      const wet = have.map(d => d.wet ?? d.mm >= 1);
+      const rainAgree = wet.every(w => w === wet[0]);
+      const score = (spread <= 2 ? 0 : spread <= 4 ? 1 : 2) + (rainAgree ? 0 : 1);
+      badge = score === 0 ? `<span class="badge good">Concordi</span>` : score === 1 ? `<span class="badge warn">Abbastanza simili</span>` : `<span class="badge bad">Discordanti</span>`;
+    }
+    const rows = SRC.map((s, i) => {
+      const d = ds[i];
+      if (!d) return `<div class="drow miss"><i class="dot ${s.cls}"></i><span class="lbl">${s.name}</span><span class="emo">·</span><span class="tt">n.d.</span><span class="mm"></span></div>`;
+      return `<div class="drow"><i class="dot ${s.cls}"></i><span class="lbl">${s.name}</span><span class="emo" title="${d.cat ? LABEL[d.cat] : ''}">${emo(d.cat, false)}</span><span class="tt"><span class="lo">${r0(d.min)}°</span> / <strong>${r0(d.max)}°</strong></span><span class="mm">${d.prob != null ? d.prob + '%' : d.mm >= 0.1 ? r1(d.mm) + ' mm' : '—'}</span></div>`;
+    }).join('');
+    return `<div class="day"><div class="day-h"><span class="name">${fmtDay(k, idx)}</span>${badge}</div>${rows}</div>`;
+  }).join('');
+}
+
+function renderWindy(lat, lon) {
+  const la = lat.toFixed(3), lo = lon.toFixed(3);
+  const src = `https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=km%2Fh&zoom=8&overlay=rain&product=ecmwf&level=surface&lat=${la}&lon=${lo}&detailLat=${la}&detailLon=${lo}&marker=true&message=true`;
+  $('windyBox').innerHTML = `<button id="btnWindy" class="btn-tertiary">Mostra mappa Windy</button>`;
+  if (SNAP) { $('windyBox').innerHTML = ''; }
+  else $('btnWindy').onclick = () => { $('windyBox').innerHTML = `<iframe class="windy-frame" src="${src}" loading="lazy" title="Mappa Windy"></iframe>`; };
+  $('links').innerHTML = `
+    <a href="https://www.windy.com/${la}/${lo}?${la},${lo},9" target="_blank" rel="noopener">Apri Windy${ic('launch')}</a>
+    <a href="https://www.yr.no/en/forecast/daily-table/${la},${lo}" target="_blank" rel="noopener">Apri Yr${ic('launch')}</a>
+    <a id="amLink" href="https://www.meteoam.it/it/home" target="_blank" rel="noopener">Apri Meteo AM${ic('launch')}</a>`;
+  setAmLink(current && current.name);
+}
+function setAmLink(name) {
+  const a = $('amLink'); if (!a) return;
+  const slug = name ? name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '';
+  a.href = slug ? 'https://www.meteoam.it/it/meteo-citta/' + slug : 'https://www.meteoam.it/it/home';
+}
+
+// ---------- place name ----------
+async function placeName(lat, lon) {
+  try {
+    const j = await getJSON(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=it`, 6000);
+    return j.city || j.locality || j.principalSubdivision || null;
+  } catch { return null; }
+}
+
+// ---------- main ----------
+let current = null;
+async function run(loc) {
+  current = loc;
+  store.set('loc', loc);
+  $('status').innerHTML = '<span class="spin"></span>Scarico le previsioni…';
+  $('status').classList.remove('hidden');
+  $('place').textContent = loc.name || 'La tua posizione';
+  if (!loc.name) placeName(loc.lat, loc.lon).then(n => { if (n && current === loc) { loc.name = n; $('place').textContent = n; setAmLink(n); store.set('loc', loc); } });
+  const res = await Promise.allSettled([loadYr(loc.lat, loc.lon), loadAM(loc.lat, loc.lon), loadWindy(loc.lat, loc.lon)]);
+  const data = res.map(r => r.status === 'fulfilled' ? r.value : null);
+  res.forEach((r, i) => r.status === 'rejected' && console.warn(SRC[i].name, r.reason));
+  if (!data.some(Boolean)) { $('status').textContent = 'Non riesco a scaricare le previsioni. Controlla la connessione e riprova.'; return; }
+  const now = SNAP ? SNAP.taken : Date.now();
+  renderNow(data, now); renderRun(data, now); renderChart(data, now); renderRain(data, now); renderDays(data, now); renderWindy(loc.lat, loc.lon);
+  $('status').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  const failed = SRC.filter((_, i) => !data[i]).map(s => s.name);
+  $('updated').textContent = (SNAP ? 'Anteprima · dati del ' + new Date(now).toLocaleDateString('it-IT') + ' alle ' : 'Aggiornato alle ') + fmtHour(now) + (failed.length ? ' · non disponibile: ' + failed.join(', ') : '');
+}
+
+function locate() {
+  if (!navigator.geolocation) { showSearch('Il GPS non è disponibile: cerca una città.'); return; }
+  $('status').innerHTML = '<span class="spin"></span>Cerco la tua posizione…';
+  $('status').classList.remove('hidden');
+  navigator.geolocation.getCurrentPosition(
+    p => run({ lat: p.coords.latitude, lon: p.coords.longitude, gps: true }),
+    () => {
+      const last = store.get('loc');
+      if (last) { run(last); }
+      else showSearch('Non ho accesso alla posizione. Consenti la localizzazione o cerca una città.');
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 10 * 60e3 }
+  );
+}
+
+function showSearch(msg) {
+  $('searchBox').classList.remove('hidden');
+  if (msg) { $('status').textContent = msg; $('status').classList.remove('hidden'); }
+  $('q').focus();
+}
+$('btnSearch').onclick = () => $('searchBox').classList.toggle('hidden') || $('q').focus();
+$('btnLocate').onclick = locate;
+$('btnRefresh').onclick = () => current ? run(current) : locate();
+$('searchForm').onsubmit = async e => {
+  e.preventDefault();
+  const q = $('q').value.trim(); if (!q) return;
+  $('results').innerHTML = '<div class="hint">Cerco…</div>';
+  try {
+    const j = await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=it`);
+    const list = j.results || [];
+    $('results').innerHTML = list.length ? '' : '<div class="hint">Nessun risultato.</div>';
+    list.forEach(r => {
+      const b = document.createElement('button');
+      b.textContent = [r.name, r.admin1, r.country_code].filter(Boolean).join(', ');
+      b.onclick = () => { $('searchBox').classList.add('hidden'); $('results').innerHTML = ''; $('q').value = ''; run({ lat: r.latitude, lon: r.longitude, name: r.name }); };
+      $('results').appendChild(b);
+    });
+  } catch { $('results').innerHTML = '<div class="hint">Ricerca non riuscita.</div>'; }
+};
+document.addEventListener('visibilitychange', () => {
+  if (!SNAP && document.visibilityState === 'visible' && current && Date.now() - (current._ts || 0) > 30 * 60e3) { current._ts = Date.now(); run(current); }
+});
+
+document.querySelectorAll('svg[data-i]').forEach(el => { el.setAttribute('viewBox', '0 0 32 32'); el.innerHTML = ICON[el.dataset.i]; });
+setupChartInteraction();
+if (SNAP) {
+  ['btnSearch', 'btnLocate', 'btnRefresh'].forEach(id => $(id).disabled = true);
+  run({ lat: SNAP.lat, lon: SNAP.lon, name: SNAP.name });
+  return;
+}
+const qs = new URLSearchParams(location.search);
+if (qs.get('lat') && qs.get('lon')) run({ lat: +qs.get('lat'), lon: +qs.get('lon'), name: qs.get('name') || null });
+else locate();
+})();
+</script>
+</body>
+</html>
