@@ -176,11 +176,16 @@ section h2 { font-size: 14px; line-height: 18px; font-weight: 600; letter-spacin
 .tip b { display: block; font-weight: 600; margin-bottom: 4px; }
 .tip div { display: flex; align-items: center; gap: 6px; }
 .tip .dot { width: 8px; height: 8px; }
-.rain { margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.rain { margin-top: 8px; display: flex; align-items: flex-start; }
+/* legend lives outside the scroller, so iOS rubber-band scrolling can't move it */
+.rain-scroll { flex: 1; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: none; }
+.rain tr.hd th { height: 22px; }
+.rain-legend th { height: 28px; }
+.rain-legend tr.hd th { height: 22px; }
 .rain table { border-collapse: separate; border-spacing: 1px; font-size: 12px; letter-spacing: 0.32px; font-variant-numeric: tabular-nums; }
 .rain th { font-weight: 400; color: var(--text-helper); padding: 0 2px 4px; text-align: center; white-space: nowrap; }
 .rain .rowlbl { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-weight: 400; white-space: nowrap; }
-.rain th.rowh { text-align: left; padding: 0 8px 0 0; position: sticky; left: 0; background: var(--layer); z-index: 1; }
+.rain th.rowh { text-align: left; padding: 0 8px 0 0; }
 .rain td { width: 36px; min-width: 36px; height: 28px; text-align: center; background: var(--rain-0); color: var(--text-secondary); }
 .rain td.r1, .rain td.r2 { background: var(--rain-1); color: var(--rain-ink-1); }
 .rain td.r2 { background: var(--rain-2); color: var(--rain-ink-2); }
@@ -803,12 +808,13 @@ function renderRain(data, now) {
     const txt = mm == null ? '–' : mm < 0.1 ? '' : mm < 10 ? r1(mm) : r0(mm);
     return `<td class="${cls(mm)}" title="${s.name}: ${mm == null ? 'n.d.' : r1(mm) + ' mm'}">${txt}</td>`;
   };
-  let head = '<tr><th class="rowh"></th>' + blocks.map(b => {
+  let head = '<tr class="hd">' + blocks.map(b => {
     const d = new Date(b); const hh = d.getHours();
     return `<th class="${hh < 3 ? 'day-sep' : ''}">${hh < 3 ? d.toLocaleDateString('it-IT', { weekday: 'short' }) : String(hh).padStart(2, '0')}</th>`;
   }).join('') + '</tr>';
-  const rows = SRC.map((s, i) => '<tr><th class="rowh"><span class="rowlbl"><i class="dot ' + s.cls + '"></i>' + s.short + '</span></th>' + blocks.map(b => cell(s, i, b)).join('') + '</tr>').join('');
-  $('rain').innerHTML = `<table>${head}${rows}</table>`;
+  const rows = SRC.map((s, i) => '<tr>' + blocks.map(b => cell(s, i, b)).join('') + '</tr>').join('');
+  const legend = '<tr class="hd"><th></th></tr>' + SRC.map(s => '<tr><th class="rowh"><span class="rowlbl"><i class="dot ' + s.cls + '"></i>' + s.short + '</span></th></tr>').join('');
+  $('rain').innerHTML = `<table class="rain-legend">${legend}</table><div class="rain-scroll"><table>${head}${rows}</table></div>`;
   $('rainNote').classList.toggle('hidden', !data.some(d => d && d.isProb));
 }
 
