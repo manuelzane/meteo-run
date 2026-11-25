@@ -43,9 +43,9 @@
   --inverse-text: #ffffff;
   --selected-bg: #161616;
   --selected-text: #ffffff;
-  --s1: #6929c4;  /* purple 70 · Yr */
-  --s2: #1192e8;  /* cyan 50 · Aeronautica */
-  --s3: #9f1853;  /* magenta 70 · Windy */
+  --s1: #1192e8;  /* cyan 50 · Yr (azzurro) */
+  --s2: #0043ce;  /* blue 70 · Aeronautica (blu scuro) */
+  --s3: #da1e28;  /* red 60 · Windy (rosso) */
   --rain-0: #f4f4f4; --rain-1: #d0e2ff; --rain-2: #a6c8ff; --rain-3: #0f62fe; --rain-4: #002d9c;
   --rain-ink-1: #161616; --rain-ink-2: #161616; --rain-ink-3: #ffffff; --rain-ink-4: #ffffff;
   --tag-green-bg: #a7f0ba; --tag-green: #0e6027;
@@ -74,7 +74,7 @@
     --inverse-text: #161616;
     --selected-bg: #f4f4f4;
     --selected-text: #161616;
-    --s1: #8a3ffc; --s2: #1192e8; --s3: #ee5396;
+    --s1: #33b1ff; --s2: #0f62fe; --s3: #fa4d56;
     --rain-0: #393939; --rain-1: #002d9c; --rain-2: #0043ce; --rain-3: #4589ff; --rain-4: #a6c8ff;
     --rain-ink-1: #ffffff; --rain-ink-2: #ffffff; --rain-ink-3: #161616; --rain-ink-4: #161616;
     --tag-green-bg: #0e6027; --tag-green: #a7f0ba;
@@ -104,7 +104,7 @@
     --inverse-text: #161616;
     --selected-bg: #f4f4f4;
     --selected-text: #161616;
-    --s1: #8a3ffc; --s2: #1192e8; --s3: #ee5396;
+    --s1: #33b1ff; --s2: #0f62fe; --s3: #fa4d56;
     --rain-0: #393939; --rain-1: #002d9c; --rain-2: #0043ce; --rain-3: #4589ff; --rain-4: #a6c8ff;
     --rain-ink-1: #ffffff; --rain-ink-2: #ffffff; --rain-ink-3: #161616; --rain-ink-4: #161616;
     --tag-green-bg: #0e6027; --tag-green: #a7f0ba;
@@ -179,6 +179,7 @@ section h2 { font-size: 14px; line-height: 18px; font-weight: 600; letter-spacin
 .rain { margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .rain table { border-collapse: separate; border-spacing: 1px; font-size: 12px; letter-spacing: 0.32px; font-variant-numeric: tabular-nums; }
 .rain th { font-weight: 400; color: var(--text-helper); padding: 0 2px 4px; text-align: center; white-space: nowrap; }
+.rain .rowlbl { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-weight: 400; white-space: nowrap; }
 .rain th.rowh { text-align: left; padding: 0 8px 0 0; position: sticky; left: 0; background: var(--layer); z-index: 1; }
 .rain td { width: 36px; min-width: 36px; height: 28px; text-align: center; background: var(--rain-0); color: var(--text-secondary); }
 .rain td.r1, .rain td.r2 { background: var(--rain-1); color: var(--rain-ink-1); }
@@ -327,9 +328,9 @@ footer a { color: var(--link); text-decoration: none; }
 <script>
 (() => {
 const SRC = [
-  { id: 'yr', name: 'Yr', cls: 'd1', color: 'var(--s1)' },
-  { id: 'am', name: 'Aeronautica', cls: 'd2', color: 'var(--s2)' },
-  { id: 'wd', name: 'Windy · ECMWF', cls: 'd3', color: 'var(--s3)' },
+  { id: 'yr', name: 'Yr', short: 'Yr', cls: 'd1', color: 'var(--s1)' },
+  { id: 'am', name: 'Aeronautica', short: 'Aeronautica', cls: 'd2', color: 'var(--s2)' },
+  { id: 'wd', name: 'Windy · ECMWF', short: 'Windy', cls: 'd3', color: 'var(--s3)' },
 ];
 const $ = id => document.getElementById(id);
 const H = 3600e3;
@@ -806,7 +807,7 @@ function renderRain(data, now) {
     const d = new Date(b); const hh = d.getHours();
     return `<th class="${hh < 3 ? 'day-sep' : ''}">${hh < 3 ? d.toLocaleDateString('it-IT', { weekday: 'short' }) : String(hh).padStart(2, '0')}</th>`;
   }).join('') + '</tr>';
-  const rows = SRC.map((s, i) => '<tr><th class="rowh"><i class="dot ' + s.cls + '"></i></th>' + blocks.map(b => cell(s, i, b)).join('') + '</tr>').join('');
+  const rows = SRC.map((s, i) => '<tr><th class="rowh"><span class="rowlbl"><i class="dot ' + s.cls + '"></i>' + s.short + '</span></th>' + blocks.map(b => cell(s, i, b)).join('') + '</tr>').join('');
   $('rain').innerHTML = `<table>${head}${rows}</table>`;
   $('rainNote').classList.toggle('hidden', !data.some(d => d && d.isProb));
 }
